@@ -70,7 +70,7 @@ function PricingCard({
   const { user, subscription } = useAuth();
   const { loading, handleCheckout, handleManageSubscription } = useStripeCheckout();
 
-  const isCurrentPlan = subscription.plan === plan.planId;
+  const isCurrentPlan = user && subscription?.plan === plan.planId;
   const isLoading = loading === plan.planId;
 
   const handleClick = () => {
@@ -152,7 +152,7 @@ function PricingCard({
 export default function LandingPricing() {
   const headerRef = useRef(null);
   const isHeaderInView = useInView(headerRef, { once: true, margin: "-100px" });
-  const { subscription, checkSubscription } = useAuth();
+  const { user, subscription, checkSubscription } = useAuth();
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -182,7 +182,7 @@ export default function LandingPricing() {
           <p className="max-w-2xl mx-auto text-lg text-white/60">
             Escolha o plano ideal para suas necessidades financeiras.
           </p>
-          {subscription.subscribed && subscription.subscription_end && (
+          {user && subscription?.subscribed && subscription?.subscription_end && (
             <p className="mt-4 text-sm text-green-400">
               Sua assinatura {subscription.plan.toUpperCase()} renova em{' '}
               {new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}
