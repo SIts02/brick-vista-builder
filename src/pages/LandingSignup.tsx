@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import GoogleIcon from '@/components/auth/GoogleIcon';
+import LoginTransition from '@/components/auth/LoginTransition';
 import { toast } from 'sonner';
 
 const LandingSignup = () => {
@@ -15,8 +16,8 @@ const LandingSignup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
   const { signUpWithEmail, signInWithGoogle } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +28,10 @@ const LandingSignup = () => {
     const { error } = await signUpWithEmail(email, password);
     setLoading(false);
     if (error) { toast.error(error.message || 'Erro ao criar conta'); } 
-    else { toast.success('Conta criada com sucesso!'); navigate('/dashboard'); }
+    else { 
+      toast.success('Conta criada com sucesso!'); 
+      setShowTransition(true);
+    }
   };
 
   const handleGoogleSignup = async () => {
@@ -41,7 +45,9 @@ const LandingSignup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+    <>
+      <LoginTransition show={showTransition} />
+      <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       <Link to="/" className="absolute top-4 left-4 z-50">
         <Button variant="ghost" size="icon" className="bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10">
           <ArrowLeft className="h-5 w-5" />
@@ -90,6 +96,7 @@ const LandingSignup = () => {
         </div>
       </motion.div>
     </div>
+    </>
   );
 };
 
