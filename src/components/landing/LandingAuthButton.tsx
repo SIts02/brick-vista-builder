@@ -42,9 +42,9 @@ const LandingAuthButton = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10"
+              className="bg-white/15 backdrop-blur-md border border-white/20 hover:bg-white/30 text-white rounded-full w-12 h-12 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-110 transition-all duration-300"
             >
-              <User className="h-5 w-5" />
+              <User className="h-6 w-6" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-black/90 backdrop-blur-sm border-white/10 text-white">
@@ -82,9 +82,9 @@ const LandingAuthButton = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 text-white rounded-full w-10 h-10"
+          className="bg-white/15 backdrop-blur-md border border-white/20 hover:bg-white/30 text-white rounded-full w-12 h-12 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-110 transition-all duration-300"
         >
-          <User className="h-5 w-5" />
+          <User className="h-6 w-6" />
         </Button>
       </Link>
     </motion.div>
