@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Json } from '@/integrations/supabase/types';
 
 type AuditAction = 
   | 'login'
@@ -37,13 +35,14 @@ export function useAuditLog() {
     if (!user?.id) return;
 
     try {
-      // Sanitize metadata - remove any sensitive data and convert to Json
-      const sanitizedMetadata = metadata ? sanitizeMetadata(metadata) : {};
-
-      await supabase.rpc('log_audit_event', {
-        p_action: action,
-        p_resource: resource || null,
-        p_metadata: sanitizedMetadata as Json,
+      // Client-side logging - can be extended to send to an analytics service
+      // or a dedicated audit log table when available
+      console.debug('[Audit]', {
+        userId: user.id,
+        action,
+        resource,
+        metadata: metadata ? sanitizeMetadata(metadata) : undefined,
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       // Silently fail - audit logging should not block user actions
@@ -55,26 +54,18 @@ export function useAuditLog() {
 }
 
 // Remove sensitive fields from metadata before logging
-function sanitizeMetadata(metadata: AuditMetadata): Record<string, Json> {
+function sanitizeMetadata(metadata: AuditMetadata): Record<string, unknown> {
   const sensitiveFields = ['password', 'token', 'secret', 'key', 'credit_card', 'cvv', 'ssn'];
-  const sanitized: Record<string, Json> = {};
+  const sanitized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(metadata)) {
     const lowerKey = key.toLowerCase();
     if (sensitiveFields.some(field => lowerKey.includes(field))) {
       sanitized[key] = '[REDACTED]';
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      sanitized[key] = sanitizeMetadata(value as AuditMetadata) as unknown as Json;
-    } else if (
-      typeof value === 'string' || 
-      typeof value === 'number' || 
-      typeof value === 'boolean' || 
-      value === null ||
-      Array.isArray(value)
-    ) {
-      sanitized[key] = value as Json;
+      sanitized[key] = sanitizeMetadata(value as AuditMetadata);
     } else {
-      sanitized[key] = String(value);
+      sanitized[key] = value;
     }
   }
 

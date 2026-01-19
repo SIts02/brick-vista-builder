@@ -1,11 +1,18 @@
-import { useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface RateLimitOptions {
   maxRequests?: number;
   windowMinutes?: number;
 }
+
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+// Client-side rate limiting using in-memory storage
+const rateLimitStore = new Map<string, RateLimitEntry>();
 
 export function useRateLimit() {
   const { user } = useAuth();
@@ -14,28 +21,27 @@ export function useRateLimit() {
     endpoint: string,
     options: RateLimitOptions = {}
   ): Promise<boolean> => {
-    if (!user?.id) return true; // Allow if not authenticated (will be caught by other auth checks)
+    if (!user?.id) return true;
 
     const { maxRequests = 100, windowMinutes = 60 } = options;
+    const key = `${user.id}:${endpoint}`;
+    const now = Date.now();
+    const windowMs = windowMinutes * 60 * 1000;
 
-    try {
-      const { data, error } = await supabase.rpc('check_rate_limit', {
-        p_user_id: user.id,
-        p_endpoint: endpoint,
-        p_max_requests: maxRequests,
-        p_window_minutes: windowMinutes,
-      });
+    const entry = rateLimitStore.get(key);
 
-      if (error) {
-        console.error('Rate limit check error:', error);
-        return true; // Allow on error to prevent blocking legitimate users
-      }
-
-      return data ?? true;
-    } catch (error) {
-      console.error('Rate limit error:', error);
+    if (!entry || now > entry.resetTime) {
+      // New window or expired
+      rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
       return true;
     }
+
+    if (entry.count >= maxRequests) {
+      return false;
+    }
+
+    entry.count++;
+    return true;
   }, [user?.id]);
 
   return { checkRateLimit };
