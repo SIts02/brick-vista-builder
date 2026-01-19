@@ -14,11 +14,15 @@ type AuditAction =
   | 'budget_update'
   | 'goal_create'
   | 'goal_update'
+  | 'goal_delete'
   | 'settings_update'
   | 'mfa_enable'
   | 'mfa_disable'
+  | 'mfa_verify'
   | 'export_data'
-  | 'import_data';
+  | 'import_data'
+  | 'report_create'
+  | 'report_delete';
 
 interface AuditMetadata {
   [key: string]: unknown;
