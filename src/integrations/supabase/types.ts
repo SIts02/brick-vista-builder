@@ -10,32 +10,35 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
       alert_history: {
         Row: {
           alert_id: string
+          created_at: string
           id: string
-          is_read: boolean | null
-          message: string | null
+          is_read: boolean
+          message: string
           triggered_at: string
           user_id: string
         }
         Insert: {
           alert_id: string
+          created_at?: string
           id?: string
-          is_read?: boolean | null
-          message?: string | null
+          is_read?: boolean
+          message: string
           triggered_at?: string
           user_id: string
         }
         Update: {
           alert_id?: string
+          created_at?: string
           id?: string
-          is_read?: boolean | null
-          message?: string | null
+          is_read?: boolean
+          message?: string
           triggered_at?: string
           user_id?: string
         }
@@ -55,9 +58,8 @@ export type Database = {
           created_at: string
           icon: string | null
           id: string
-          is_default: boolean | null
           name: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
           user_id: string
         }
         Insert: {
@@ -65,9 +67,8 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
-          is_default?: boolean | null
           name: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
           user_id: string
         }
         Update: {
@@ -75,9 +76,8 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
-          is_default?: boolean | null
           name?: string
-          type?: Database["public"]["Enums"]["transaction_type"]
+          type?: string
           user_id?: string
         }
         Relationships: []
@@ -87,84 +87,172 @@ export type Database = {
           category_id: string
           created_at: string
           id: string
-          is_active: boolean | null
+          is_active: boolean
           keywords: string[]
-          priority: number | null
+          priority: number
           rule_name: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           category_id: string
           created_at?: string
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           keywords: string[]
-          priority?: number | null
+          priority?: number
           rule_name: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           category_id?: string
           created_at?: string
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           keywords?: string[]
-          priority?: number | null
+          priority?: number
           rule_name?: string
+          updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "categorization_rules_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      goals: {
+      contacts: {
         Row: {
-          category: string | null
-          color: string | null
+          contact_id: string
           created_at: string
-          current_amount: number | null
-          deadline: string | null
-          icon: string | null
           id: string
-          name: string
-          status: Database["public"]["Enums"]["goal_status"] | null
-          target_amount: number
+          last_message_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          category?: string | null
-          color?: string | null
+          contact_id: string
           created_at?: string
-          current_amount?: number | null
-          deadline?: string | null
-          icon?: string | null
           id?: string
-          name: string
-          status?: Database["public"]["Enums"]["goal_status"] | null
-          target_amount: number
+          last_message_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          category?: string | null
-          color?: string | null
+          contact_id?: string
           created_at?: string
-          current_amount?: number | null
+          id?: string
+          last_message_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          category: string
+          created_at: string
+          current: number
+          deadline: string | null
+          icon: string | null
+          id: string
+          name: string
+          status: string
+          target: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          current?: number
+          deadline?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          status?: string
+          target: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current?: number
           deadline?: string | null
           icon?: string | null
           id?: string
           name?: string
-          status?: Database["public"]["Enums"]["goal_status"] | null
-          target_amount?: number
+          status?: string
+          target?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          average_price: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          purchase_date: string
+          quantity: number | null
+          ticker: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_price: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          purchase_date?: string
+          quantity?: number | null
+          ticker?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_price?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          purchase_date?: string
+          quantity?: number | null
+          ticker?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          receiver_id?: string
+          sender_id?: string
         }
         Relationships: []
       }
@@ -200,19 +288,17 @@ export type Database = {
           amount: number
           category_id: string | null
           created_at: string
-          description: string | null
+          description: string
           end_date: string | null
-          frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          frequency_interval: number | null
+          frequency: string
+          frequency_interval: number
           id: string
-          is_active: boolean | null
-          last_execution_date: string | null
+          is_active: boolean
           next_execution_date: string
           payment_method: string | null
           start_date: string
-          template_id: string | null
           template_name: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
           updated_at: string
           user_id: string
         }
@@ -220,19 +306,17 @@ export type Database = {
           amount: number
           category_id?: string | null
           created_at?: string
-          description?: string | null
+          description: string
           end_date?: string | null
-          frequency: Database["public"]["Enums"]["recurrence_frequency"]
-          frequency_interval?: number | null
+          frequency: string
+          frequency_interval?: number
           id?: string
-          is_active?: boolean | null
-          last_execution_date?: string | null
+          is_active?: boolean
           next_execution_date: string
           payment_method?: string | null
-          start_date: string
-          template_id?: string | null
+          start_date?: string
           template_name: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
           updated_at?: string
           user_id: string
         }
@@ -240,85 +324,186 @@ export type Database = {
           amount?: number
           category_id?: string | null
           created_at?: string
-          description?: string | null
+          description?: string
           end_date?: string | null
-          frequency?: Database["public"]["Enums"]["recurrence_frequency"]
-          frequency_interval?: number | null
+          frequency?: string
+          frequency_interval?: number
           id?: string
-          is_active?: boolean | null
-          last_execution_date?: string | null
+          is_active?: boolean
           next_execution_date?: string
           payment_method?: string | null
           start_date?: string
-          template_id?: string | null
           template_name?: string
-          type?: Database["public"]["Enums"]["transaction_type"]
+          type?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "recurring_transactions_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recurring_transactions_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "transaction_templates"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      report_schedules: {
+        Row: {
+          created_at: string
+          filters: Json
+          frequency: string
+          id: string
+          is_active: boolean
+          last_run: string | null
+          name: string
+          next_run: string | null
+          schedule_config: Json
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json
+          frequency: string
+          id?: string
+          is_active?: boolean
+          last_run?: string | null
+          name: string
+          next_run?: string | null
+          schedule_config?: Json
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_run?: string | null
+          name?: string
+          next_run?: string | null
+          schedule_config?: Json
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      report_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          template_config: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          template_config?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          template_config?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_reports: {
+        Row: {
+          created_at: string
+          data_snapshot: Json | null
+          description: string | null
+          file_url: string | null
+          filters: Json
+          format: string
+          id: string
+          name: string
+          status: string
+          template_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_snapshot?: Json | null
+          description?: string | null
+          file_url?: string | null
+          filters?: Json
+          format?: string
+          id?: string
+          name: string
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data_snapshot?: Json | null
+          description?: string | null
+          file_url?: string | null
+          filters?: Json
+          format?: string
+          id?: string
+          name?: string
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       transaction_templates: {
         Row: {
           amount: number | null
           category_id: string | null
           created_at: string
-          description: string | null
+          description: string
           id: string
           name: string
           payment_method: string | null
           tags: string[] | null
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           amount?: number | null
           category_id?: string | null
           created_at?: string
-          description?: string | null
+          description: string
           id?: string
           name: string
           payment_method?: string | null
           tags?: string[] | null
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           amount?: number | null
           category_id?: string | null
           created_at?: string
-          description?: string | null
+          description?: string
           id?: string
           name?: string
           payment_method?: string | null
           tags?: string[] | null
-          type?: Database["public"]["Enums"]["transaction_type"]
+          type?: string
+          updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "transaction_templates_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       transactions: {
         Row: {
@@ -328,12 +513,9 @@ export type Database = {
           date: string
           description: string
           id: string
-          notes: string | null
           payment_method: string | null
-          status: Database["public"]["Enums"]["transaction_status"] | null
-          tags: string[] | null
-          type: Database["public"]["Enums"]["transaction_type"]
-          updated_at: string
+          status: string
+          type: string
           user_id: string
         }
         Insert: {
@@ -343,12 +525,9 @@ export type Database = {
           date?: string
           description: string
           id?: string
-          notes?: string | null
           payment_method?: string | null
-          status?: Database["public"]["Enums"]["transaction_status"] | null
-          tags?: string[] | null
-          type: Database["public"]["Enums"]["transaction_type"]
-          updated_at?: string
+          status?: string
+          type: string
           user_id: string
         }
         Update: {
@@ -358,12 +537,9 @@ export type Database = {
           date?: string
           description?: string
           id?: string
-          notes?: string | null
           payment_method?: string | null
-          status?: Database["public"]["Enums"]["transaction_status"] | null
-          tags?: string[] | null
-          type?: Database["public"]["Enums"]["transaction_type"]
-          updated_at?: string
+          status?: string
+          type?: string
           user_id?: string
         }
         Relationships: [
@@ -378,129 +554,107 @@ export type Database = {
       }
       user_alerts: {
         Row: {
-          alert_type: Database["public"]["Enums"]["alert_type"]
+          alert_type: string
           category_id: string | null
           created_at: string
           frequency: string | null
           id: string
-          is_active: boolean | null
+          is_active: boolean
           last_triggered: string | null
-          message: string | null
+          message: string
           threshold_value: number | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          alert_type: Database["public"]["Enums"]["alert_type"]
+          alert_type: string
           category_id?: string | null
           created_at?: string
           frequency?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           last_triggered?: string | null
-          message?: string | null
+          message: string
           threshold_value?: number | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          alert_type?: Database["public"]["Enums"]["alert_type"]
+          alert_type?: string
           category_id?: string | null
           created_at?: string
           frequency?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           last_triggered?: string | null
-          message?: string | null
+          message?: string
           threshold_value?: number | null
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_alerts_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_onboarding: {
         Row: {
-          completed: boolean | null
+          completed: boolean
           created_at: string
-          current_step: number | null
           id: string
-          steps_completed: Json | null
           updated_at: string
         }
         Insert: {
-          completed?: boolean | null
+          completed?: boolean
           created_at?: string
-          current_step?: number | null
           id: string
-          steps_completed?: Json | null
           updated_at?: string
         }
         Update: {
-          completed?: boolean | null
+          completed?: boolean
           created_at?: string
-          current_step?: number | null
           id?: string
-          steps_completed?: Json | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_onboarding_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_preferences: {
         Row: {
           created_at: string
-          currency: string | null
-          date_format: string | null
-          email_notifications: boolean | null
+          currency: string
+          date_format: string
+          email_notifications: boolean
           id: string
-          language: string | null
-          notifications_enabled: boolean | null
-          show_balance: boolean | null
-          theme: string | null
+          language: string
+          notifications_enabled: boolean
+          show_balance: boolean
+          theme: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          currency?: string | null
-          date_format?: string | null
-          email_notifications?: boolean | null
+          currency?: string
+          date_format?: string
+          email_notifications?: boolean
           id?: string
-          language?: string | null
-          notifications_enabled?: boolean | null
-          show_balance?: boolean | null
-          theme?: string | null
+          language?: string
+          notifications_enabled?: boolean
+          show_balance?: boolean
+          theme?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
-          currency?: string | null
-          date_format?: string | null
-          email_notifications?: boolean | null
+          currency?: string
+          date_format?: string
+          email_notifications?: boolean
           id?: string
-          language?: string | null
-          notifications_enabled?: boolean | null
-          show_balance?: boolean | null
-          theme?: string | null
+          language?: string
+          notifications_enabled?: boolean
+          show_balance?: boolean
+          theme?: string
           updated_at?: string
           user_id?: string
         }
@@ -516,7 +670,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
@@ -532,6 +686,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"][]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -541,18 +699,7 @@ export type Database = {
       }
     }
     Enums: {
-      alert_type:
-        | "budget_exceeded"
-        | "goal_reached"
-        | "bill_due"
-        | "low_balance"
-        | "unusual_spending"
-        | "custom"
       app_role: "admin" | "moderator" | "user"
-      goal_status: "active" | "completed" | "cancelled"
-      recurrence_frequency: "daily" | "weekly" | "monthly" | "yearly"
-      transaction_status: "completed" | "pending" | "cancelled"
-      transaction_type: "income" | "expense"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -680,19 +827,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      alert_type: [
-        "budget_exceeded",
-        "goal_reached",
-        "bill_due",
-        "low_balance",
-        "unusual_spending",
-        "custom",
-      ],
       app_role: ["admin", "moderator", "user"],
-      goal_status: ["active", "completed", "cancelled"],
-      recurrence_frequency: ["daily", "weekly", "monthly", "yearly"],
-      transaction_status: ["completed", "pending", "cancelled"],
-      transaction_type: ["income", "expense"],
     },
   },
 } as const
