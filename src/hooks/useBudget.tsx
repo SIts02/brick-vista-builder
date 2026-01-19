@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useCategories } from './useCategories';
+import { useSecureAction } from './useSecureAction';
 
 export interface BudgetCategory {
   id: string;
@@ -21,6 +22,7 @@ export interface BudgetCategory {
 
 export const useBudget = () => {
   const { user } = useAuth();
+  const { executeSecurely } = useSecureAction();
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -124,37 +126,49 @@ export const useBudget = () => {
       })
     );
 
-    try {
-      const { data: categoryData, error: fetchError } = await supabase
-        .from('categories')
-        .select('color')
-        .eq('id', categoryId)
-        .eq('user_id', user.id)
-        .single();
-      
-      if (fetchError) throw fetchError;
-      
-      const currentColor = extractColor(categoryData?.color);
-      
-      const { error } = await supabase
-        .from('categories')
-        .update({ 
-          color: `${currentColor}:${newLimit}` 
-        })
-        .eq('id', categoryId)
-        .eq('user_id', user.id);
+    const result = await executeSecurely(
+      {
+        endpoint: 'budget/update',
+        action: 'budget_update',
+        resource: 'budget',
+        maxRequests: 20,
+        windowMinutes: 1
+      },
+      async () => {
+        const { data: categoryData, error: fetchError } = await supabase
+          .from('categories')
+          .select('color')
+          .eq('id', categoryId)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (fetchError) throw fetchError;
+        
+        const currentColor = extractColor(categoryData?.color);
+        
+        const { error } = await supabase
+          .from('categories')
+          .update({ 
+            color: `${currentColor}:${newLimit}` 
+          })
+          .eq('id', categoryId)
+          .eq('user_id', user.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast.success('Limite de orçamento atualizado com sucesso!');
-      return true;
-    } catch (err: any) {
-      // Rollback on error
+        toast.success('Limite de orçamento atualizado com sucesso!');
+        return true;
+      },
+      { categoryId, newLimit }
+    );
+
+    if (result === null) {
+      // Rollback on rate limit or error
       setBudgetCategories(previousBudgetCategories);
-      console.error('Erro ao atualizar limite de orçamento:', err);
-      toast.error('Erro ao atualizar limite de orçamento');
       return false;
     }
+
+    return result;
   };
 
   useEffect(() => {

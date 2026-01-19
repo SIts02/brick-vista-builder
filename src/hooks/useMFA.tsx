@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Factor, AuthenticatorAssuranceLevels } from '@supabase/supabase-js';
+import { useSecureAction } from './useSecureAction';
 
 interface MFAState {
   factors: Factor[];
@@ -16,6 +17,7 @@ interface MFAState {
 }
 
 export function useMFA() {
+  const { executeSecurely } = useSecureAction();
   const [state, setState] = useState<MFAState>({
     factors: [],
     isLoading: true,
@@ -105,91 +107,127 @@ export function useMFA() {
       return { success: false };
     }
 
-    try {
-      setState(prev => ({ ...prev, isVerifying: true }));
+    const result = await executeSecurely(
+      {
+        endpoint: 'mfa/verify-enrollment',
+        action: 'mfa_enable',
+        resource: 'mfa',
+        maxRequests: 5,
+        windowMinutes: 1
+      },
+      async () => {
+        setState(prev => ({ ...prev, isVerifying: true }));
 
-      // Create a challenge
-      const { data: challengeData, error: challengeError } = 
-        await supabase.auth.mfa.challenge({ factorId: state.factorId });
+        // Create a challenge
+        const { data: challengeData, error: challengeError } = 
+          await supabase.auth.mfa.challenge({ factorId: state.factorId! });
 
-      if (challengeError) throw challengeError;
+        if (challengeError) throw challengeError;
 
-      // Verify the code
-      const { data: verifyData, error: verifyError } = 
-        await supabase.auth.mfa.verify({
-          factorId: state.factorId,
-          challengeId: challengeData.id,
-          code,
-        });
+        // Verify the code
+        const { data: verifyData, error: verifyError } = 
+          await supabase.auth.mfa.verify({
+            factorId: state.factorId!,
+            challengeId: challengeData.id,
+            code,
+          });
 
-      if (verifyError) throw verifyError;
+        if (verifyError) throw verifyError;
 
-      // Reset enrollment state and refresh factors
-      setState(prev => ({
-        ...prev,
-        qrCode: null,
-        secret: null,
-        factorId: null,
-        isVerifying: false,
-      }));
+        // Reset enrollment state and refresh factors
+        setState(prev => ({
+          ...prev,
+          qrCode: null,
+          secret: null,
+          factorId: null,
+          isVerifying: false,
+        }));
 
-      await fetchMFAStatus();
-      toast.success('Autenticação de dois fatores ativada com sucesso!');
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error verifying MFA:', error);
-      toast.error(error.message || 'Código inválido. Tente novamente.');
+        await fetchMFAStatus();
+        toast.success('Autenticação de dois fatores ativada com sucesso!');
+        return { success: true };
+      },
+      {}
+    );
+
+    if (result === null) {
       setState(prev => ({ ...prev, isVerifying: false }));
-      return { success: false, error };
+      return { success: false };
     }
+
+    return result;
   };
 
   // Challenge and verify for login
   const challengeAndVerify = async (factorId: string, code: string) => {
-    try {
-      setState(prev => ({ ...prev, isVerifying: true }));
+    const result = await executeSecurely(
+      {
+        endpoint: 'mfa/challenge-verify',
+        action: 'mfa_verify',
+        resource: 'mfa',
+        maxRequests: 5,
+        windowMinutes: 1
+      },
+      async () => {
+        setState(prev => ({ ...prev, isVerifying: true }));
 
-      // Create a challenge
-      const { data: challengeData, error: challengeError } = 
-        await supabase.auth.mfa.challenge({ factorId });
+        // Create a challenge
+        const { data: challengeData, error: challengeError } = 
+          await supabase.auth.mfa.challenge({ factorId });
 
-      if (challengeError) throw challengeError;
+        if (challengeError) throw challengeError;
 
-      // Verify the code
-      const { data: verifyData, error: verifyError } = 
-        await supabase.auth.mfa.verify({
-          factorId,
-          challengeId: challengeData.id,
-          code,
-        });
+        // Verify the code
+        const { data: verifyData, error: verifyError } = 
+          await supabase.auth.mfa.verify({
+            factorId,
+            challengeId: challengeData.id,
+            code,
+          });
 
-      if (verifyError) throw verifyError;
+        if (verifyError) throw verifyError;
 
+        setState(prev => ({ ...prev, isVerifying: false }));
+        await fetchMFAStatus();
+        return { success: true };
+      },
+      {}
+    );
+
+    if (result === null) {
       setState(prev => ({ ...prev, isVerifying: false }));
-      await fetchMFAStatus();
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error verifying MFA challenge:', error);
-      toast.error(error.message || 'Código inválido. Tente novamente.');
-      setState(prev => ({ ...prev, isVerifying: false }));
-      return { success: false, error };
+      return { success: false };
     }
+
+    return result;
   };
 
   // Unenroll a factor
   const unenrollFactor = async (factorId: string) => {
-    try {
-      const { error } = await supabase.auth.mfa.unenroll({ factorId });
-      if (error) throw error;
+    const result = await executeSecurely(
+      {
+        endpoint: 'mfa/unenroll',
+        action: 'mfa_disable',
+        resource: 'mfa',
+        maxRequests: 3,
+        windowMinutes: 1
+      },
+      async () => {
+        const { error } = await supabase.auth.mfa.unenroll({ factorId });
+        if (error) throw error;
 
-      await fetchMFAStatus();
-      toast.success('Autenticação de dois fatores desativada');
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error unenrolling MFA:', error);
-      toast.error(error.message || 'Erro ao desativar 2FA');
-      return { success: false, error };
+        await fetchMFAStatus();
+        toast.success('Autenticação de dois fatores desativada');
+        return { success: true };
+      },
+      { factorId }
+    );
+
+    if (result === null) {
+      return { success: false };
     }
+
+    return result;
   };
 
   // Cancel enrollment

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSecureAction } from './useSecureAction';
 
 export interface ReportTemplate {
   id: string;
@@ -62,6 +63,7 @@ export interface ReportFilters {
 export const useReports = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { executeSecurely } = useSecureAction();
   const [loading, setLoading] = useState(false);
   const [templates, setTemplates] = useState<ReportTemplate[]>([]);
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
@@ -155,123 +157,143 @@ export const useReports = () => {
   const createTemplate = async (data: Omit<ReportTemplate, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
 
-    try {
-      const { data: result, error } = await supabase
-        .from('report_templates')
-        .insert({ ...data, user_id: user.id } as any)
-        .select()
-        .single();
+    const result = await executeSecurely(
+      {
+        endpoint: 'reports/create-template',
+        action: 'report_create',
+        resource: 'report_template',
+        maxRequests: 10,
+        windowMinutes: 1
+      },
+      async () => {
+        const { data: result, error } = await supabase
+          .from('report_templates')
+          .insert({ ...data, user_id: user.id } as any)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setTemplates(prev => [...prev, result as ReportTemplate]);
-      toast({
-        title: 'Sucesso',
-        description: 'Template de relatório criado'
-      });
-      return result;
-    } catch (error) {
-      console.error('Error creating template:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao criar template',
-        variant: 'destructive'
-      });
-    }
+        setTemplates(prev => [...prev, result as ReportTemplate]);
+        toast({
+          title: 'Sucesso',
+          description: 'Template de relatório criado'
+        });
+        return result;
+      },
+      { templateName: data.name }
+    );
+
+    return result;
   };
 
   // Save report
   const saveReport = async (data: Omit<SavedReport, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
 
-    try {
-      const { data: result, error } = await supabase
-        .from('saved_reports')
-        .insert({ ...data, user_id: user.id } as any)
-        .select()
-        .single();
+    const result = await executeSecurely(
+      {
+        endpoint: 'reports/save',
+        action: 'report_create',
+        resource: 'saved_report',
+        maxRequests: 10,
+        windowMinutes: 1
+      },
+      async () => {
+        const { data: result, error } = await supabase
+          .from('saved_reports')
+          .insert({ ...data, user_id: user.id } as any)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setSavedReports(prev => [...prev, result as SavedReport]);
-      toast({
-        title: 'Sucesso',
-        description: 'Relatório salvo com sucesso'
-      });
-      return result;
-    } catch (error) {
-      console.error('Error saving report:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao salvar relatório',
-        variant: 'destructive'
-      });
-    }
+        setSavedReports(prev => [...prev, result as SavedReport]);
+        toast({
+          title: 'Sucesso',
+          description: 'Relatório salvo com sucesso'
+        });
+        return result;
+      },
+      { reportName: data.name }
+    );
+
+    return result;
   };
 
   // Delete saved report
   const deleteSavedReport = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('saved_reports')
-        .delete()
-        .eq('id', id);
+    const result = await executeSecurely(
+      {
+        endpoint: 'reports/delete',
+        action: 'report_delete',
+        resource: 'saved_report',
+        maxRequests: 10,
+        windowMinutes: 1
+      },
+      async () => {
+        const { error } = await supabase
+          .from('saved_reports')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setSavedReports(prev => prev.filter(report => report.id !== id));
-      toast({
-        title: 'Sucesso',
-        description: 'Relatório removido'
-      });
-    } catch (error) {
-      console.error('Error deleting saved report:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao remover relatório',
-        variant: 'destructive'
-      });
-    }
+        setSavedReports(prev => prev.filter(report => report.id !== id));
+        toast({
+          title: 'Sucesso',
+          description: 'Relatório removido'
+        });
+        return true;
+      },
+      { reportId: id }
+    );
+
+    return result;
   };
 
   // Export to CSV
-  const exportToCSV = (data: any[], filename: string) => {
-    try {
-      const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor', 'Método de Pagamento'];
-      const csvContent = [
-        headers.join(','),
-        ...data.map(transaction => [
-          transaction.date,
-          `"${transaction.description}"`,
-          transaction.categories?.name || 'Sem categoria',
-          transaction.type === 'income' ? 'Receita' : 'Despesa',
-          transaction.amount,
-          transaction.payment_method || ''
-        ].join(','))
-      ].join('\n');
+  const exportToCSV = async (data: any[], filename: string) => {
+    await executeSecurely(
+      {
+        endpoint: 'reports/export',
+        action: 'export_data',
+        resource: 'report',
+        maxRequests: 5,
+        windowMinutes: 1
+      },
+      async () => {
+        const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor', 'Método de Pagamento'];
+        const csvContent = [
+          headers.join(','),
+          ...data.map(transaction => [
+            transaction.date,
+            `"${transaction.description}"`,
+            transaction.categories?.name || 'Sem categoria',
+            transaction.type === 'income' ? 'Receita' : 'Despesa',
+            transaction.amount,
+            transaction.payment_method || ''
+          ].join(','))
+        ].join('\n');
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${filename}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      toast({
-        title: 'Sucesso',
-        description: 'Relatório exportado para CSV'
-      });
-    } catch (error) {
-      console.error('Error exporting to CSV:', error);
-      toast({
-        title: 'Erro',
-        description: 'Erro ao exportar relatório',
-        variant: 'destructive'
-      });
-    }
+        toast({
+          title: 'Sucesso',
+          description: 'Relatório exportado para CSV'
+        });
+        return true;
+      },
+      { filename, recordCount: data.length }
+    );
   };
 
   // Calculate report statistics

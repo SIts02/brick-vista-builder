@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useSecureAction } from './useSecureAction';
 
 export interface Goal {
   id: string;
@@ -40,6 +41,7 @@ export interface UpdateGoalInput {
 export function useGoals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { executeSecurely } = useSecureAction();
 
   // Fetch all goals
   const {
@@ -69,30 +71,47 @@ export function useGoals() {
     mutationFn: async (input: CreateGoalInput) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      const { data, error } = await supabase
-        .from('goals')
-        .insert({
-          user_id: user.id,
-          name: input.name,
-          category: input.category,
-          target: input.target,
-          current: input.current || 0,
-          deadline: input.deadline || null,
-          icon: input.icon || null,
-          status: 'em andamento',
-        })
-        .select()
-        .single();
+      const result = await executeSecurely(
+        {
+          endpoint: 'goals/create',
+          action: 'goal_create',
+          resource: 'goal',
+          maxRequests: 20,
+          windowMinutes: 1
+        },
+        async () => {
+          const { data, error } = await supabase
+            .from('goals')
+            .insert({
+              user_id: user.id,
+              name: input.name,
+              category: input.category,
+              target: input.target,
+              current: input.current || 0,
+              deadline: input.deadline || null,
+              icon: input.icon || null,
+              status: 'em andamento',
+            })
+            .select()
+            .single();
 
-      if (error) throw error;
-      return data as Goal;
+          if (error) throw error;
+          return data as Goal;
+        },
+        { goalName: input.name, target: input.target }
+      );
+
+      if (result === null) throw new Error('Operação bloqueada por rate limit');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals', user?.id] });
       toast.success('Meta criada com sucesso!');
     },
     onError: (error: Error) => {
-      toast.error(`Erro ao criar meta: ${error.message}`);
+      if (!error.message.includes('rate limit')) {
+        toast.error(`Erro ao criar meta: ${error.message}`);
+      }
     },
   });
 
@@ -101,35 +120,52 @@ export function useGoals() {
     mutationFn: async (input: UpdateGoalInput) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      const { id, ...updateData } = input;
-      
-      // Auto-update status if goal is completed
-      const goalToUpdate = goals.find(g => g.id === id);
-      if (goalToUpdate && updateData.current !== undefined) {
-        const newCurrent = updateData.current;
-        const target = updateData.target || goalToUpdate.target;
-        if (newCurrent >= target) {
-          updateData.status = 'concluída';
-        }
-      }
+      const result = await executeSecurely(
+        {
+          endpoint: 'goals/update',
+          action: 'goal_update',
+          resource: 'goal',
+          maxRequests: 30,
+          windowMinutes: 1
+        },
+        async () => {
+          const { id, ...updateData } = input;
+          
+          // Auto-update status if goal is completed
+          const goalToUpdate = goals.find(g => g.id === id);
+          if (goalToUpdate && updateData.current !== undefined) {
+            const newCurrent = updateData.current;
+            const target = updateData.target || goalToUpdate.target;
+            if (newCurrent >= target) {
+              updateData.status = 'concluída';
+            }
+          }
 
-      const { data, error } = await supabase
-        .from('goals')
-        .update(updateData)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
+          const { data, error } = await supabase
+            .from('goals')
+            .update(updateData)
+            .eq('id', id)
+            .eq('user_id', user.id)
+            .select()
+            .single();
 
-      if (error) throw error;
-      return data as Goal;
+          if (error) throw error;
+          return data as Goal;
+        },
+        { goalId: input.id }
+      );
+
+      if (result === null) throw new Error('Operação bloqueada por rate limit');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals', user?.id] });
       toast.success('Meta atualizada com sucesso!');
     },
     onError: (error: Error) => {
-      toast.error(`Erro ao atualizar meta: ${error.message}`);
+      if (!error.message.includes('rate limit')) {
+        toast.error(`Erro ao atualizar meta: ${error.message}`);
+      }
     },
   });
 
@@ -138,21 +174,38 @@ export function useGoals() {
     mutationFn: async (goalId: string) => {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
-      const { error } = await supabase
-        .from('goals')
-        .delete()
-        .eq('id', goalId)
-        .eq('user_id', user.id);
+      const result = await executeSecurely(
+        {
+          endpoint: 'goals/delete',
+          action: 'goal_delete',
+          resource: 'goal',
+          maxRequests: 10,
+          windowMinutes: 1
+        },
+        async () => {
+          const { error } = await supabase
+            .from('goals')
+            .delete()
+            .eq('id', goalId)
+            .eq('user_id', user.id);
 
-      if (error) throw error;
-      return goalId;
+          if (error) throw error;
+          return goalId;
+        },
+        { goalId }
+      );
+
+      if (result === null) throw new Error('Operação bloqueada por rate limit');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals', user?.id] });
       toast.success('Meta excluída com sucesso!');
     },
     onError: (error: Error) => {
-      toast.error(`Erro ao excluir meta: ${error.message}`);
+      if (!error.message.includes('rate limit')) {
+        toast.error(`Erro ao excluir meta: ${error.message}`);
+      }
     },
   });
 
