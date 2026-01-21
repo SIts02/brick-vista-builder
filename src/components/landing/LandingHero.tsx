@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-earth.png";
 
@@ -21,7 +21,7 @@ const LandingHero = () => {
     <section
       ref={ref}
       id="home"
-      className="relative h-[120vh] overflow-hidden"
+      className="relative h-screen overflow-hidden"
     >
       {/* Parallax Background */}
       <motion.div
@@ -42,66 +42,55 @@ const LandingHero = () => {
 
       {/* Content */}
       <motion.div
-        className="relative z-20 flex flex-col items-center justify-center h-screen px-4 text-center"
+        className="relative z-20 flex flex-col items-center justify-center h-full px-4 text-center"
         style={{ y: textY, opacity }}
       >
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
-        className="flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
-      >
-        <Sparkles className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium text-white/90">
-          O melhor gestor financeiro pessoal
-        </span>
-      </motion.div>
-
-      <motion.h1
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.4 }}
-        className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
-      >
-        Controle Suas
-        <span className="block bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
-          Finanças com IA
-        </span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.6 }}
-        className="max-w-2xl mx-auto text-lg md:text-xl text-white/70 mb-10"
-      >
-        Gerencie transações, metas, investimentos e orçamentos em um só lugar.
-        Assistente IA integrado para insights financeiros personalizados.
-      </motion.p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.8 }}
-        className="flex flex-col sm:flex-row gap-4"
-      >
-        <Button
-          size="lg"
-          onClick={() => navigate('/signup')}
-          className="group px-8 py-6 text-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0 shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:shadow-[0_0_60px_rgba(59,130,246,0.7)] transition-all duration-500"
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 tracking-tight"
         >
-          Começar Grátis
-          <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-          className="px-8 py-6 text-lg bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm transition-all duration-500"
+          Controle Suas
+          <span className="block text-cyan-400">
+            Finanças com IA
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.5 }}
+          className="max-w-xl mx-auto text-base md:text-lg text-white/60 mb-10 leading-relaxed"
         >
-          Saiba Mais
-        </Button>
-      </motion.div>
+          Gerencie transações, metas, investimentos e orçamentos em um só
+          lugar. Assistente IA integrado para insights financeiros
+          personalizados.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.7 }}
+          className="flex flex-col sm:flex-row gap-4"
+        >
+          <Button
+            size="lg"
+            onClick={() => navigate('/signup')}
+            className="group px-8 py-6 text-base font-medium bg-cyan-500 hover:bg-cyan-600 text-white border-0 rounded-full shadow-lg hover:shadow-cyan-500/30 transition-all duration-300"
+          >
+            Começar Grátis
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-8 py-6 text-base font-medium bg-white/5 border border-white/20 text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full transition-all duration-300"
+          >
+            Saiba Mais
+          </Button>
+        </motion.div>
       </motion.div>
 
       {/* Scroll Indicator */}

@@ -5,7 +5,6 @@ import LandingFeatures from "@/components/landing/LandingFeatures";
 import LandingPricing from "@/components/landing/LandingPricing";
 import LandingTestimonials from "@/components/landing/LandingTestimonials";
 import LandingFooter from "@/components/landing/LandingFooter";
-import LandingAuthButton from "@/components/landing/LandingAuthButton";
 
 const dockItems = [
   { icon: Home, label: "Home", href: "#home" },
@@ -18,7 +17,6 @@ const dockItems = [
 const LandingIndex = () => {
   return (
     <div className="min-h-screen bg-black">
-      <LandingAuthButton />
       <LandingDock items={dockItems} />
       <LandingHero />
       <LandingFeatures />
