@@ -1,7 +1,16 @@
 import * as React from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, User, LogOut, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface DockProps {
   className?: string;
@@ -21,7 +30,6 @@ interface DockIconButtonProps {
   className?: string;
 }
 
-
 const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
   ({ icon: Icon, label, onClick, href, className }, ref) => {
     const handleClick = () => {
@@ -39,17 +47,17 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
         ref={ref}
         onClick={handleClick}
         className={cn(
-          "group relative flex h-12 w-12 items-center justify-center rounded-xl",
-          "bg-white/10 backdrop-blur-md transition-all duration-500",
-          "hover:bg-white/20",
-          "focus:outline-none focus:ring-2 focus:ring-white/30",
+          "group relative flex h-10 w-10 items-center justify-center rounded-lg",
+          "bg-transparent transition-all duration-300",
+          "hover:bg-white/10",
+          "focus:outline-none",
           className
         )}
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
-        <Icon className="h-5 w-5 text-white/80 transition-colors duration-300 group-hover:text-white" />
+        <Icon className="h-5 w-5 text-white/70 transition-colors duration-300 group-hover:text-white" />
         <span
           className={cn(
             "absolute -bottom-8 left-1/2 -translate-x-1/2",
@@ -67,6 +75,86 @@ const DockIconButton = React.forwardRef<HTMLButtonElement, DockIconButtonProps>(
   }
 );
 DockIconButton.displayName = "DockIconButton";
+
+const UserButton = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Você saiu da sua conta');
+  };
+
+  if (user) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <motion.button
+            className={cn(
+              "group relative flex h-10 w-10 items-center justify-center rounded-lg",
+              "bg-transparent transition-all duration-300",
+              "hover:bg-white/10",
+              "focus:outline-none"
+            )}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            <User className="h-5 w-5 text-white/70 transition-colors duration-300 group-hover:text-white" />
+          </motion.button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-black/90 backdrop-blur-sm border-white/10 text-white">
+          <DropdownMenuItem className="text-gray-400 focus:text-gray-400 focus:bg-transparent cursor-default">
+            {user.email}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => navigate('/dashboard')}
+            className="text-cyan-400 focus:text-cyan-400 focus:bg-white/10 cursor-pointer"
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Acessar Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="text-red-400 focus:text-red-400 focus:bg-white/10 cursor-pointer"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  return (
+    <motion.button
+      onClick={() => navigate('/login')}
+      className={cn(
+        "group relative flex h-10 w-10 items-center justify-center rounded-lg",
+        "bg-transparent transition-all duration-300",
+        "hover:bg-white/10",
+        "focus:outline-none"
+      )}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+    >
+      <User className="h-5 w-5 text-white/70 transition-colors duration-300 group-hover:text-white" />
+      <span
+        className={cn(
+          "absolute -bottom-8 left-1/2 -translate-x-1/2",
+          "px-2 py-1 text-xs font-medium text-white",
+          "bg-black/80 backdrop-blur-sm rounded-md",
+          "opacity-0 group-hover:opacity-100 transition-all duration-300",
+          "whitespace-nowrap pointer-events-none",
+          "translate-y-1 group-hover:translate-y-0"
+        )}
+      >
+        Entrar
+      </span>
+    </motion.button>
+  );
+};
 
 const LandingDock = React.forwardRef<HTMLDivElement, DockProps>(
   ({ items, className }, ref) => {
@@ -107,13 +195,14 @@ const LandingDock = React.forwardRef<HTMLDivElement, DockProps>(
             ease: "easeInOut",
           }}
           className={cn(
-            "flex items-center gap-2 px-4 py-3",
+            "flex items-center gap-1 px-3 py-2",
             "bg-white/5 backdrop-blur-xl",
             "border border-white/10 rounded-2xl",
             "shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
           )}
         >
-          <div className="flex items-center gap-1">
+          {/* Navigation Icons */}
+          <div className="flex items-center">
             {items.map((item, index) => (
               <DockIconButton
                 key={index}
@@ -123,6 +212,19 @@ const LandingDock = React.forwardRef<HTMLDivElement, DockProps>(
                 href={item.href}
               />
             ))}
+          </div>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-white/20 mx-2" />
+
+          {/* User Button */}
+          <UserButton />
+
+          {/* Brand */}
+          <div className="flex items-center pl-2">
+            <span className="text-white/90 font-medium tracking-wide text-sm">
+              ascend.<sup className="text-[8px] ml-0.5 text-white/60">®</sup>
+            </span>
           </div>
         </motion.div>
       </motion.nav>
