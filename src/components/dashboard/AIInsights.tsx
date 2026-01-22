@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Card, 
   CardHeader, 
@@ -8,7 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Sparkles, TrendingUp, TrendingDown, AlertTriangle, Lightbulb } from "lucide-react";
-import AnimatedIcon from "@/components/AnimatedIcon";
 
 // Simulated AI insights
 const insights = [
@@ -104,11 +103,7 @@ const AIInsights = () => {
     <Card className="animate-fade-in reveal-delay-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center">
-          <AnimatedIcon 
-            icon={Bot} 
-            className="mr-2 h-6 w-6 text-momoney-600" 
-            animation="pulse"
-          />
+          <Bot className="mr-2 h-6 w-6 text-primary" />
           <CardTitle className="text-lg font-medium">Insights Inteligentes</CardTitle>
         </div>
       </CardHeader>
