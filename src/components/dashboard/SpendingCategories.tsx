@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,23 +16,21 @@ const SpendingCategories = () => {
   const { resolvedTheme } = useTheme();
   
   const isDark = resolvedTheme === 'dark';
-  const textColor = isDark ? 'hsl(215, 20%, 65%)' : 'hsl(215, 16%, 47%)';
+  const textColor = isDark ? 'hsl(215, 20%, 55%)' : 'hsl(215, 16%, 47%)';
   
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16', '#ec4899', '#6366f1'];
 
-  // Format data for the chart
   const chartData = summary.spendingByCategory.map((item, index) => ({
     name: item.name,
     value: item.value,
     color: COLORS[index % COLORS.length]
   }));
 
-  // Custom tooltip for both charts
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-card px-4 py-3 rounded-xl shadow-lg border border-border">
-          <p className="font-medium text-card-foreground">{payload[0].name || payload[0].payload?.name}</p>
+        <div className="glass-card px-4 py-3 !rounded-xl shadow-lg">
+          <p className="font-medium text-foreground">{payload[0].name || payload[0].payload?.name}</p>
           <p className="text-sm font-bold text-primary">{formatCurrency(payload[0].value)}</p>
         </div>
       );
@@ -42,32 +39,32 @@ const SpendingCategories = () => {
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-semibold text-foreground">Spending Categories</CardTitle>
+    <div className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-foreground">Categorias de Gastos</h3>
         <div className="flex gap-1">
           <Button
-            variant={chartType === 'pie' ? 'default' : 'outline'}
+            variant={chartType === 'pie' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setChartType('pie')}
-            className="h-8 w-8 p-0 rounded-lg"
+            className="h-8 w-8 p-0 rounded-xl"
           >
             <PieChartIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={chartType === 'bar' ? 'default' : 'outline'}
+            variant={chartType === 'bar' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setChartType('bar')}
-            className="h-8 w-8 p-0 rounded-lg"
+            className="h-8 w-8 p-0 rounded-xl"
           >
             <BarChart3 className="h-4 w-4" />
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="h-[300px] pt-0">
+      </div>
+      <div className="h-[260px]">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <Skeleton className="h-[200px] w-[200px] rounded-full" />
+            <Skeleton className="h-[180px] w-[180px] rounded-full" />
           </div>
         ) : chartData.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -90,18 +87,18 @@ const SpendingCategories = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={80}
-                  innerRadius={40}
+                  outerRadius={70}
+                  innerRadius={35}
                   fill="#8884d8"
                   dataKey="value"
-                  paddingAngle={2}
-                  label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                  paddingAngle={3}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {chartData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={`url(#pieGradient-${index})`}
-                      stroke={isDark ? 'hsl(217, 33%, 17%)' : '#fff'}
+                      stroke={isDark ? 'hsl(220, 40%, 13%)' : '#fff'}
                       strokeWidth={2}
                     />
                   ))}
@@ -111,7 +108,7 @@ const SpendingCategories = () => {
                   layout="vertical" 
                   verticalAlign="middle" 
                   align="right"
-                  wrapperStyle={{ color: textColor, fontSize: '12px' }}
+                  wrapperStyle={{ color: textColor, fontSize: '11px' }}
                   iconType="circle"
                   iconSize={8}
                 />
@@ -131,7 +128,7 @@ const SpendingCategories = () => {
                   angle={-45}
                   textAnchor="end"
                   height={80}
-                  fontSize={11}
+                  fontSize={10}
                   stroke={textColor}
                   tickLine={false}
                   axisLine={false}
@@ -139,7 +136,7 @@ const SpendingCategories = () => {
                 <YAxis 
                   tickFormatter={(value) => formatCurrency(value, { notation: 'compact' })}
                   stroke={textColor}
-                  fontSize={11}
+                  fontSize={10}
                   tickLine={false}
                   axisLine={false}
                 />
@@ -153,8 +150,8 @@ const SpendingCategories = () => {
             )}
           </ResponsiveContainer>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

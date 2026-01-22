@@ -1,9 +1,3 @@
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent 
-} from "@/components/ui/card";
 import { ShoppingCart, Coffee, Home, Car, CreditCard, DollarSign, TrendingUp, Loader2, Receipt, LucideIcon } from "lucide-react";
 import { useTransactions, Transaction } from "@/hooks/useTransactions";
 import { useCategories, Category } from "@/hooks/useCategories";
@@ -11,7 +5,6 @@ import { useMemo } from "react";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-// Map category names/types to icons
 const getCategoryIcon = (categoryName: string | null, transactionType: string): LucideIcon => {
   if (!categoryName) {
     return transactionType === 'income' ? DollarSign : Receipt;
@@ -61,14 +54,12 @@ const RecentActivity = () => {
 
   const loading = transactionsLoading || categoriesLoading;
 
-  // Create a map for quick category lookup
   const categoryMap = useMemo(() => {
     const map = new Map<string, Category>();
     categories.forEach(cat => map.set(cat.id, cat));
     return map;
   }, [categories]);
 
-  // Get the 6 most recent transactions
   const recentTransactions = useMemo(() => {
     return transactions.slice(0, 6);
   }, [transactions]);
@@ -84,82 +75,75 @@ const RecentActivity = () => {
 
   const getIconColorClass = (type: string) => {
     return type === 'income'
-      ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400" 
-      : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+      ? "bg-green-500/10 text-green-500" 
+      : "bg-red-500/10 text-red-500";
   };
 
   const getDisplayAmount = (transaction: Transaction) => {
-    // For display purposes, expenses show as negative
     return transaction.type === 'expense' ? -Math.abs(transaction.amount) : Math.abs(transaction.amount);
   };
 
   if (loading) {
     return (
-      <Card className="h-full animate-fade-in reveal-delay-2">
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">Atividade Recente</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center py-8">
+      <div className="h-full">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Atividade Recente</h3>
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   if (recentTransactions.length === 0) {
     return (
-      <Card className="h-full animate-fade-in reveal-delay-2">
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">Atividade Recente</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-          <Receipt className="h-10 w-10 text-muted-foreground mb-2" />
-          <p className="text-muted-foreground text-sm">Nenhuma transação registrada ainda.</p>
-          <p className="text-muted-foreground text-xs">Adicione uma transação para começar.</p>
-        </CardContent>
-      </Card>
+      <div className="h-full">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Atividade Recente</h3>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
+            <Receipt className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-muted-foreground text-sm">Nenhuma transação registrada.</p>
+          <p className="text-muted-foreground text-xs mt-1">Adicione uma transação para começar.</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full animate-fade-in reveal-delay-2">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium">Atividade Recente</CardTitle>
-      </CardHeader>
-      <CardContent className="overflow-hidden">
-        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-          {recentTransactions.map((transaction) => {
-            const category = transaction.category_id ? categoryMap.get(transaction.category_id) : null;
-            const categoryName = category?.name || null;
-            const Icon = getCategoryIcon(categoryName, transaction.type);
-            const displayAmount = getDisplayAmount(transaction);
+    <div className="h-full">
+      <h3 className="text-lg font-semibold text-foreground mb-4">Atividade Recente</h3>
+      <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+        {recentTransactions.map((transaction) => {
+          const category = transaction.category_id ? categoryMap.get(transaction.category_id) : null;
+          const categoryName = category?.name || null;
+          const Icon = getCategoryIcon(categoryName, transaction.type);
+          const displayAmount = getDisplayAmount(transaction);
 
-            return (
-              <div 
-                key={transaction.id} 
-                className="flex items-center justify-between py-2 border-b border-border last:border-0"
-              >
-                <div className="flex items-center">
-                  <div className={`p-2 rounded-full ${getIconColorClass(transaction.type)} mr-3`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{transaction.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatTransactionDate(transaction.date)} 
-                      {categoryName && ` • ${categoryName}`}
-                    </p>
-                  </div>
+          return (
+            <div 
+              key={transaction.id} 
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/30 transition-colors"
+            >
+              <div className="flex items-center min-w-0">
+                <div className={`p-2.5 rounded-xl ${getIconColorClass(transaction.type)} mr-3 flex-shrink-0`}>
+                  <Icon className="h-4 w-4" />
                 </div>
-                <p className={`font-medium ${transaction.type === 'income' ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                  {formatCurrency(displayAmount)}
-                </p>
+                <div className="min-w-0">
+                  <p className="font-medium text-sm text-foreground truncate">{transaction.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatTransactionDate(transaction.date)} 
+                    {categoryName && ` • ${categoryName}`}
+                  </p>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              <p className={`font-semibold text-sm flex-shrink-0 ml-3 ${transaction.type === 'income' ? "text-green-500" : "text-red-500"}`}>
+                {formatCurrency(displayAmount)}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 
