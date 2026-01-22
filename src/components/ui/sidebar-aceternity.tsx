@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Link, LinkProps } from "react-router-dom";
+import { Link, LinkProps, useLocation } from "react-router-dom";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -96,11 +96,15 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col bg-sidebar w-[300px] flex-shrink-0",
+        "h-full px-3 py-4 hidden md:flex md:flex-col glass-sidebar",
         className
       )}
       animate={{
-        width: animate ? (open ? "300px" : "60px") : "300px",
+        width: animate ? (open ? "240px" : "72px") : "240px",
+      }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1],
       }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
@@ -121,16 +125,23 @@ export const MobileSidebar = ({
     <>
       <div
         className={cn(
-          "h-10 px-4 py-4 flex flex-row md:hidden items-center justify-between bg-sidebar w-full"
+          "h-14 px-4 py-3 flex flex-row md:hidden items-center justify-between glass-sidebar w-full"
         )}
         {...props}
       >
-        <div className="flex justify-end z-20 w-full">
-          <Menu
-            className="text-sidebar-foreground cursor-pointer"
-            onClick={() => setOpen(!open)}
+        <div className="flex items-center gap-3">
+          <img
+            src={ascendLogo}
+            alt="Ascend"
+            className="h-6 w-auto"
           />
         </div>
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 rounded-xl glass-button"
+        >
+          <Menu className="text-sidebar-foreground w-5 h-5" />
+        </button>
         <AnimatePresence>
           {open && (
             <motion.div
@@ -139,18 +150,18 @@ export const MobileSidebar = ({
               exit={{ x: "-100%", opacity: 0 }}
               transition={{
                 duration: 0.3,
-                ease: "easeInOut",
+                ease: [0.4, 0, 0.2, 1],
               }}
               className={cn(
-                "fixed h-full w-full inset-0 bg-sidebar p-10 z-[100] flex flex-col justify-between",
+                "fixed h-full w-full inset-0 glass-sidebar p-6 z-[100] flex flex-col justify-between",
                 className
               )}
             >
               <div
-                className="absolute right-10 top-10 z-50 text-sidebar-foreground cursor-pointer"
+                className="absolute right-6 top-6 z-50 p-2 rounded-xl glass-button cursor-pointer"
                 onClick={() => setOpen(!open)}
               >
-                <X />
+                <X className="text-sidebar-foreground w-5 h-5" />
               </div>
               {children}
             </motion.div>
@@ -171,22 +182,35 @@ export const SidebarLink = ({
   props?: Omit<LinkProps, 'to'>;
 }) => {
   const { open, animate } = useSidebarAceternity();
+  const location = useLocation();
+  const isActive = location.pathname === link.href;
+  
   return (
     <Link
       to={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2",
+        "sidebar-link group",
+        isActive && "active",
         className
       )}
       {...props}
     >
-      {link.icon}
+      <span className={cn(
+        "icon transition-colors duration-200",
+        isActive ? "text-primary" : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
+      )}>
+        {link.icon}
+      </span>
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-sidebar-foreground text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        transition={{ duration: 0.2 }}
+        className={cn(
+          "text-sm font-medium whitespace-pre transition-all duration-200",
+          isActive ? "text-sidebar-foreground" : "text-sidebar-foreground/60 group-hover:text-sidebar-foreground"
+        )}
       >
         {link.label}
       </motion.span>
@@ -200,21 +224,24 @@ export const Logo = () => {
   return (
     <Link
       to="/dashboard"
-      className="font-normal flex space-x-2 items-center text-sm text-sidebar-foreground py-1 relative z-20"
+      className="flex items-center gap-3 px-1 py-2 relative z-20"
     >
-      <img
-        src={ascendLogo}
-        alt="Ascend Logo"
-        className="h-7 w-auto flex-shrink-0"
-      />
+      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <img
+          src={ascendLogo}
+          alt="Ascend"
+          className="h-5 w-auto"
+        />
+      </div>
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="font-medium text-sidebar-foreground whitespace-pre"
+        transition={{ duration: 0.2 }}
+        className="font-semibold text-sidebar-foreground whitespace-pre text-lg"
       >
-        {/* Text is in the logo image */}
+        Ascend
       </motion.span>
     </Link>
   );
@@ -224,13 +251,15 @@ export const LogoIcon = () => {
   return (
     <Link
       to="/dashboard"
-      className="font-normal flex space-x-2 items-center text-sm text-sidebar-foreground py-1 relative z-20"
+      className="flex items-center px-1 py-2 relative z-20"
     >
-      <img
-        src={ascendLogo}
-        alt="Ascend Logo"
-        className="h-7 w-7 object-contain flex-shrink-0"
-      />
+      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+        <img
+          src={ascendLogo}
+          alt="Ascend"
+          className="h-5 w-auto"
+        />
+      </div>
     </Link>
   );
 };
